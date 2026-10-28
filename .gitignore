@@ -1,0 +1,40 @@
+# === Python & ML ===
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+.pytest_cache/
+.raw_data/
+*.joblib
+*.pkl
+*.parquet
+baseline_stats.json
+metrics.json
+
+# === Go ===
+bin/
+dist/
+/services/controller/controller
+*.out
+*.test
+
+# === IDEs & OS ===
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+.DS_Store
+Thumbs.db
+
+# === Infrastructure & Kubernetes ===
+.env
+.env.*
+!.env.example
+kubeconfig
+*.kubeconfig
+.wslconfig
