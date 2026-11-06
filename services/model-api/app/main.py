@@ -3,10 +3,14 @@ from pydantic import BaseModel, Field
 import pandas as pd
 import json
 import os
+import time
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
 from app.loader import load_model, make_s3
+from app.logging_json import log, setup_logging
+
+setup_logging()
 
 MODEL_ENV = [
     "MODEL_URI",
@@ -106,9 +110,16 @@ def predict(req: PredictRequest):
     if app.state.model is None:
         raise HTTPException(status_code=503, detail="model not loaded")
 
+    started = time.perf_counter()
     X = pd.DataFrame([req.features], columns=FEATURES)
 
     proba = app.state.model.predict_proba(X)[0][1]
     prediction = int(proba >= 0.5)
-
+    log(
+        "INFO",
+        "predict_ok",
+        run_id=app.state.run_id,
+        n_features=len(req.features),
+        latency_ms=round((time.perf_counter() - started) * 1000, 2),
+    )
     return PredictResponse(prediction=prediction, proba=proba, run_id=app.state.run_id)
