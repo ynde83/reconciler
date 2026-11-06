@@ -1,10 +1,66 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 import pandas as pd
+import json
+import os
+from contextlib import asynccontextmanager
+from datetime import datetime, timezone
+
+from app.loader import load_model, make_s3
+
+MODEL_ENV = [
+    "MODEL_URI",
+    "MODEL_RUN_ID",
+    "S3_ENDPOINT",
+    "S3_ACCESS_KEY",
+    "S3_SECRET_KEY",
+]
+
+
+def log(level: str, msg: str, **fields) -> None:
+    record = {
+        "time": datetime.now(timezone.utc)
+        .isoformat(timespec="milliseconds")
+        .replace("+00:00", "Z"),
+        "level": level,
+        "service": "model-api",
+        "msg": msg,
+        **fields,
+    }
+    print(json.dumps(record), flush=True)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    missing = [name for name in MODEL_ENV if not os.environ.get(name)]
+    if missing:
+        log("ERROR", "model_load_failed", error=f"missing env {missing}")
+    else:
+        model_uri = os.environ["MODEL_URI"]
+        try:
+            s3 = make_s3(
+                os.environ["S3_ENDPOINT"],
+                os.environ["S3_ACCESS_KEY"],
+                os.environ["S3_SECRET_KEY"],
+            )
+            model = load_model(s3, model_uri)
+
+            app.state.run_id = os.environ["MODEL_RUN_ID"]
+            app.state.model_uri = model_uri
+            app.state.loaded_at = datetime.now(timezone.utc).strftime(
+                "%Y-%m-%dT%H:%M:%SZ"
+            )
+            app.state.model = model
+
+            log("INFO", "model_loaded", run_id=app.state.run_id, model_uri=model_uri)
+        except Exception as e:
+            log("ERROR", "model_load_failed", model_uri=model_uri, error=str(e))
+    yield
+
 
 FEATURES = [f"f{i}" for i in range(10)]
 
-app = FastAPI(title="model-api")
+app = FastAPI(title="model-api", lifespan=lifespan)
 
 app.state.model = None
 app.state.run_id = None
