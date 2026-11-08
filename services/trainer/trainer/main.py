@@ -28,7 +28,6 @@ def log(level: str, msg: str, **fields) -> None:
     print(json.dumps(record), flush=True)
 
 def now_utc() -> str:
-    """Текущее время UTC в формате RFC3339: 2026-11-09T10:19:12Z."""
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
