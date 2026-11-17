@@ -66,3 +66,12 @@ def test_empty_bins():
     edges = np.quantile(train, np.linspace(0.1, 0.9, 9))
     value = psi(bin_shares(train, edges), np.full(500, 10.0), edges)
     assert np.isfinite(value) and value > 1
+
+def test_threshold_param():
+    window = to_window(generate(500, shift=1.5, concept="v2", seed=2))
+
+    report_3 = check_drift(window, BASELINE, min_drifted=3)
+    report_4 = check_drift(window, BASELINE, min_drifted=4)
+
+    assert report_4.is_drift is False
+    assert report_4.drifted_features == report_3.drifted_features
