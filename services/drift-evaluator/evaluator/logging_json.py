@@ -3,7 +3,7 @@ import logging
 import sys
 from datetime import datetime, timezone
 
-SERVICE = "model-api"
+SERVICE = "drift-evaluator"
 
 
 class JsonFormatter(logging.Formatter):
@@ -57,4 +57,4 @@ logger = logging.getLogger(SERVICE)
 
 
 def log(level: str, msg: str, **fields):
-    logger.info(getattr(logging, level), msg, extra={"fields": fields})
+    logger.log(getattr(logging, level), msg, extra={"fields": fields})

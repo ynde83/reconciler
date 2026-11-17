@@ -57,4 +57,4 @@ logger = logging.getLogger(SERVICE)
 
 
 def log(level: str, msg: str, **fields):
-    logger.info(getattr(logging, level), msg, extra={"fields": fields})
+    logger.log(getattr(logging, level), msg, extra={"fields": fields})
