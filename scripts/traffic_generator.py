@@ -10,6 +10,7 @@ from datagen import FEATURE_NAMES, generate
 SHIFT = 1.5
 CONCEPT = "v2"
 
+
 REPORT_EVERY_SEC = 10
 
 
@@ -18,7 +19,7 @@ def parse_args():
     p.add_argument("--rps", type=float, default=5)
     p.add_argument("--duration", type=int, default=120)
     p.add_argument("--target", default="http://localhost:8000")
-    p.add_argument("--drift", choices=["drift", "none"], default="none")
+    p.add_argument("--drift", choices=["shift", "none"], default="none")
     p.add_argument("--seed", type=int, default=0)
     return p.parse_args()
 
@@ -27,7 +28,7 @@ def make_rows(n, drift, seed):
     if drift == "shift":
         df = generate(n, shift=SHIFT, concept=CONCEPT, seed=seed)
     else:
-        df = generate(n, seed)
+        df = generate(n, seed=seed)
     return df[FEATURE_NAMES].values.tolist()
 
 
